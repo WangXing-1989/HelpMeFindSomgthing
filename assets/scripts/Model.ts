@@ -18,29 +18,34 @@ export default class Model {
     public thirdTaskReaction: number; // 任务3用户正确反应时
     public LevelDifficultyEnd: number; // 结束时所处难度水平
 
-    public config: {total: number, need: number}[] = [
+    public config: {count: number, total: number, need: number}[] = [
         {
-            total: 2,
-            need: 2
+            count: 2, // 每次游戏放入的物品数量
+            total: 1, // 游戏次数
+            need: 1 // 过关需要答对次数
         },
         {
+            count: 3,
             total: 3,
             need: 3
         },
         {
-            total: 2,
+            count: 4,
+            total: 3,
             need: 2
         },
         {
-            total: 2,
+            count: 5,
+            total: 3,
             need: 2
         }
     ];
 
-    public timeNum: number;
-    public answers: number[][];
-    public levelData: {total: number, need: number};
-    public levelCount: number = 3;
+    public timeNum: number; // 记录每次答对用了多长时间
+    public answers: number[][]; // 每关答对用时
+    public levelData: {count: number, total: number, need: number}; // 当前难度配置数据
+    public levelCount: number = 3; // 一共几关
+    public totalTime: number = 30; // 每道题倒计时秒数
 
     public init() {
         this.totalScore = 0;
@@ -64,6 +69,7 @@ export default class Model {
         let curTime = new Date().getTime();
         let second = Math.round((curTime - this.timeNum) / 1000);
         this.answers[this.LevelDifficultyEnd].push(second);
+        this.start();
     }
 
     public wrong() {
@@ -73,6 +79,7 @@ export default class Model {
     public levelUp() {
         if (this.LevelDifficultyEnd < this.levelCount) {
             this.LevelDifficultyEnd++;
+            this.levelData = this.config[this.LevelDifficultyEnd];
         } else {
             this.allRight();
         }

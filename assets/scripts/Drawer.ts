@@ -1,28 +1,81 @@
-// Learn TypeScript:
-//  - https://docs.cocos.com/creator/manual/en/scripting/typescript.html
-// Learn Attribute:
-//  - https://docs.cocos.com/creator/manual/en/scripting/reference/attributes.html
-// Learn life-cycle callbacks:
-//  - https://docs.cocos.com/creator/manual/en/scripting/life-cycle-callbacks.html
+import Main from "./Main";
 
 const {ccclass, property} = cc._decorator;
 
 @ccclass
-export default class NewClass extends cc.Component {
+export default class Drawer extends cc.Component {
 
-    @property(cc.Label)
-    label: cc.Label = null;
+    @property(cc.Node)
+    icon: cc.Node = null;
 
-    @property
-    text: string = 'hello';
+    @property(cc.Node)
+    rightNode: cc.Node = null;
 
-    // LIFE-CYCLE CALLBACKS:
+    @property(cc.Node)
+    wrongNode: cc.Node = null;
 
-    // onLoad () {}
+    main: Main;
+    articleIndex: number = null; // 物品id (索引) [银行卡，钥匙，指甲钳，抽纸，遥控器，体温计]
 
-    start () {
+    protected start(): void {
+        this.main = cc.find("Canvas").getComponent(Main);
 
+        this.rightNode.active = false;
+        this.wrongNode.active = false;
     }
 
-    // update (dt) {}
+    clickSelf() {
+        this.open();
+        
+        if (this.articleIndex) {
+            this.showArticle();
+            this.right();
+        } else {
+            this.wrong();
+        }
+    }
+
+    open() {
+        this.icon.active = true;
+    }
+
+    close() {
+        this.icon.active = false;
+    }
+
+    showArticle() {
+        this.main.article.spriteFrame = this.main.articleSpriteFrames[this.articleIndex];
+        this.main.article.node.scale = 0.5;
+        this.main.article.node.x = this.node.x;
+        this.main.article.node.y = this.node.y + this.main.cabinet.y;
+        this.main.article.node.opacity = 255;
+    }
+
+    right() {
+        this.rightNode.active = true;
+        this.rightNode.x = 0;
+        this.rightNode.y = 0;
+        let spine = this.rightNode.getChildByName("spine").getComponent(sp.Skeleton);
+        spine.setAnimation(0, "shibiemubiao", false);
+        cc.tween(this.rightNode)
+            .by(0.7, { y: 150 })
+            .call(() => {
+                this.rightNode.active = false;
+                this.close();
+            })
+            .start();
+    }
+
+    wrong() {
+        this.wrongNode.active = true;
+        this.wrongNode.x = 0;
+        this.wrongNode.y = 0;
+        cc.tween(this.wrongNode)
+            .by(0.7, { y: 150 })
+            .call(() => {
+                this.wrongNode.active = false;
+                this.close();
+            })
+            .start();
+    }
 }
