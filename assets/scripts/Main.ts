@@ -39,17 +39,64 @@ export default class Main extends cc.Component {
     @property([cc.SpriteFrame])
     articleLabels: cc.SpriteFrame[] = [];
 
+    @property(cc.AudioClip)
+    bankCardAudio: cc.AudioClip = null; // 银行卡
+
+    @property(cc.AudioClip)
+    keyAudio: cc.AudioClip = null; // 钥匙
+
+    @property(cc.AudioClip)
+    nailClippersAudio: cc.AudioClip = null; // 指甲钳
+
+    @property(cc.AudioClip)
+    paperAudio: cc.AudioClip = null; // 抽纸
+
+    @property(cc.AudioClip)
+    remoteControlAudio: cc.AudioClip = null; // 遥控器
+
+    @property(cc.AudioClip)
+    thermometerAudio: cc.AudioClip = null; // 体温计
+
+    @property(cc.AudioClip)
+    failAudio: cc.AudioClip = null;
+
+    @property(cc.AudioClip)
+    successAudio: cc.AudioClip = null;
+
+    @property(cc.AudioClip)
+    tips1Audio: cc.AudioClip = null;
+
+    @property(cc.AudioClip)
+    tips2Audio: cc.AudioClip = null;
+
+    @property(cc.AudioClip)
+    tips3Audio: cc.AudioClip = null;
+
+    @property(cc.AudioClip)
+    tips4Audio: cc.AudioClip = null;
+
+    @property(cc.AudioClip)
+    tips5Audio: cc.AudioClip = null;
+
     private curTime: number; // 当前剩余时间
+    private articleIdArr: number[]; // 物品池
+    private curClickNum: number; // 当前游戏点击次数
+    private isClick: boolean; // 是否能点击抽屉（放东西的时候不能点）
 
     start() {
         GHttp.instance.login();
 
+        this.init();
+    }
+
+    public init() {
         this.content.active = false;
         this.result.node.active = true;
         this.cover.active = true;
         this.clickNode.active = false;
         this.article.node.active = false;
         this.timeLabel.node.parent.active = false;
+        this.isClick = false;
     }
 
     public startGame() {
@@ -59,9 +106,16 @@ export default class Main extends cc.Component {
         this.showLianxi();
     }
 
-    private showLianxi() {
+    public showLianxi() {
+        Model.instance.resetGameNum();
         this.initCabinet();
         this.showTips(1);
+        this.resetCurTime();
+    }
+
+    public resetCurTime() {
+        this.curTime = Model.instance.totalTime;
+        this.stopTime();
     }
 
     /** 初始化柜子 */
@@ -73,7 +127,7 @@ export default class Main extends cc.Component {
         }
     }
 
-    private showTips(type: number, articleIndex: number = -1) {
+    private showTips(type: number, articleIndex: number = -1, cur: number = -1) {
         this.tipsPanel.active = true;
         let tips1 = this.tipsPanel.getChildByName("tips1");
         let tips2 = this.tipsPanel.getChildByName("tips2");
@@ -82,18 +136,57 @@ export default class Main extends cc.Component {
         tips2.active = false;
         tips3.active = false;
 
+        this.stopTime();
+        this.isClick = false;
+
         if (type == 1) {
             tips1.active = true;
             this.clickNode.active = true;
+
+            this.playAudio(this.tips1Audio, false, () => {
+                this.playAudio(this.tips2Audio, false);
+            })
         } else if (type == 2) {
             tips2.active = true;
+            let t1 = cc.find("layout/tips1", tips2);
+            let t2 = cc.find("layout/tips2", tips2);
+            t1.active = cur <= 1;
+            t2.active = cur > 1;
             let article: cc.Sprite = cc.find("layout/article", tips2).getComponent(cc.Sprite);
             article.spriteFrame = this.articleLabels[articleIndex];
             this.clickNode.active = false;
+
+            let audio1 = cur <= 1 ? this.tips3Audio : this.tips4Audio;
+            let audio2 = [this.bankCardAudio, this.keyAudio, this.nailClippersAudio, this.paperAudio, this.remoteControlAudio, this.thermometerAudio][articleIndex];
+            this.playAudio(audio1, false, () => {
+                this.playAudio(audio2, false);
+            })
         } else if (type == 3) {
             tips3.active = true;
             this.clickNode.active = false;
-            this.scheduleOnce(this.startTime, 3);
+            if (Model.instance.LevelDifficultyEnd > 0) {
+                this.scheduleOnce(this.startTime, 3);
+            }
+            Model.instance.start();
+            this.curClickNum = 0;
+
+            this.scheduleOnce(() => this.isClick = true, 5);
+
+            this.playAudio(this.tips5Audio);
+        }
+    }
+
+    /**
+     * 播放音频
+     * @param audio 
+     * @param loop 
+     * @param callback 
+     */
+    public playAudio(audio: cc.AudioClip, loop: boolean = false, callback: Function = null) {
+        cc.audioEngine.stopAllEffects();
+        let id = cc.audioEngine.playEffect(audio, loop);
+        if (callback) {
+            cc.audioEngine.setFinishCallback(id, callback);
         }
     }
 
@@ -102,7 +195,8 @@ export default class Main extends cc.Component {
         let tips2 = this.tipsPanel.getChildByName("tips2");
         let tips3 = this.tipsPanel.getChildByName("tips3");
         if (tips1.active) {
-            this.lookArticles(Model.instance.levelData.count);
+            this.articleIdArr = [0,1,2,3,4,5];
+            this.lookArticles(1, Model.instance.levelData.count);
         } else if (tips2.active) {
 
         } else if (tips3.active) {
@@ -110,15 +204,15 @@ export default class Main extends cc.Component {
         }
     }
 
-    lookArticles(count: number) {
-        let randomIndex = Math.round(Math.random() * (this.articleSpriteFrames.length - 1));
+    lookArticles(cur: number, count: number) {
+        let randomIndex = this.getRandomArticle();
         this.article.node.active = true;
         this.article.node.opacity = 255;
         this.article.node.x = 0;
         this.article.node.y = 320;
         this.article.spriteFrame = this.articleSpriteFrames[randomIndex];
         this.article.node.scale = 1;
-        this.showTips(2, randomIndex);
+        this.showTips(2, randomIndex, cur);
 
         let drawer = this.getRandomDrawer();
         drawer.articleIndex = randomIndex;
@@ -131,13 +225,22 @@ export default class Main extends cc.Component {
             .call(() => {
                 drawer.close();
 
-                if (count > 0) {
-                    this.lookArticles(--count);
+                if (cur < count) {
+                    this.lookArticles(++cur, count);
                 } else {
                     this.showTips(3);
                 }
             })
             .start()
+    }
+
+    /**
+     * 随机获取一个物品id
+     * @returns number
+     */
+    getRandomArticle(): number {
+        let index = Math.round(Math.random() * (this.articleIdArr.length - 1));
+        return this.articleIdArr.splice(index, 1)[0];
     }
 
     /**
@@ -154,7 +257,8 @@ export default class Main extends cc.Component {
     }
 
     private startTime() {
-        this.curTime = Model.instance.totalTime;
+        this.tipsPanel.active = false;
+
         this.timeLabel.node.parent.active = true;
         this.timeLabel.string = this.curTime + "秒";
         this.schedule(this.updateTime, 1, this.curTime, 1);
@@ -169,5 +273,44 @@ export default class Main extends cc.Component {
             this.unschedule(this.updateTime);
             this.result.showFail();
         }
+    }
+
+    private stopTime() {
+        this.unschedule(this.updateTime);
+        this.timeLabel.node.parent.active = false;
+    }
+
+    checkGame() {
+        this.curClickNum++; // 每点击一次点击次数+1
+    }
+
+    checkResult() {
+        if (this.curClickNum >= Model.instance.levelData.count) {
+            Model.instance.curGameNum++; // 每点击 Model.instance.levelData.count 次，游戏次数+1
+
+            if (Model.instance.curGameNum >= Model.instance.levelData.total) {
+                if (Model.instance.answers[Model.instance.LevelDifficultyEnd]) {
+                    if (Model.instance.getCurLevelIsRight()) {
+                        if (Model.instance.LevelDifficultyEnd == 0) {
+                            this.result.showRight();
+                        } else {
+                            this.result.showLevelUp_2();
+                        }
+                    } else {
+                        if (Model.instance.LevelDifficultyEnd == 0) {
+                            this.result.showWrong();
+                        } else {
+                            this.result.showFail();
+                        }
+                    }
+                }
+            } else {
+                this.showTips(1);
+            }
+        }
+    }
+
+    checkIsClick(): boolean {
+        return this.isClick && (this.curClickNum < Model.instance.levelData.count);
     }
 }

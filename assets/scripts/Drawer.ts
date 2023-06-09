@@ -1,4 +1,5 @@
 import Main from "./Main";
+import Model from "./Model";
 
 const {ccclass, property} = cc._decorator;
 
@@ -25,6 +26,10 @@ export default class Drawer extends cc.Component {
     }
 
     clickSelf() {
+        if (!this.main.checkIsClick()) {
+            return;
+        }
+        
         this.open();
         
         if (this.articleIndex) {
@@ -33,6 +38,8 @@ export default class Drawer extends cc.Component {
         } else {
             this.wrong();
         }
+
+        this.main.checkGame();
     }
 
     open() {
@@ -44,11 +51,16 @@ export default class Drawer extends cc.Component {
     }
 
     showArticle() {
+        this.main.article.node.active = true;
         this.main.article.spriteFrame = this.main.articleSpriteFrames[this.articleIndex];
         this.main.article.node.scale = 0.5;
         this.main.article.node.x = this.node.x;
         this.main.article.node.y = this.node.y + this.main.cabinet.y;
         this.main.article.node.opacity = 255;
+    }
+
+    hideArticle() {
+        this.main.article.node.active = false;
     }
 
     right() {
@@ -61,9 +73,14 @@ export default class Drawer extends cc.Component {
             .by(0.7, { y: 150 })
             .call(() => {
                 this.rightNode.active = false;
+                this.hideArticle();
                 this.close();
+                this.main.checkResult();
             })
             .start();
+
+        Model.instance.right();
+        this.articleIndex = null;
     }
 
     wrong() {
@@ -75,7 +92,10 @@ export default class Drawer extends cc.Component {
             .call(() => {
                 this.wrongNode.active = false;
                 this.close();
+                this.main.checkResult();
             })
             .start();
+
+        Model.instance.wrong();
     }
 }
