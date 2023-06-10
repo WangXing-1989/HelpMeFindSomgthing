@@ -48,12 +48,20 @@ export default class Result extends cc.Component {
         this.scheduleOnce(() => {
             this.node.active = false;
             Model.instance.levelUp() && this.main.showLianxi();
-        }, 2);
+        }, 3);
     }
 
     public showRight() {
         this.playShow(this.right);
         this.main.playAudio(this.main.successAudio);
+
+        let lihua = this.right.getChildByName("lihua").getComponent(sp.Skeleton);
+        lihua.setAnimation(0, "lihua", false);
+
+        // this.scheduleOnce(() => {
+        //     this.node.active = false;
+        //     Model.instance.levelUp() && this.main.showLianxi();
+        // }, 2);
     }
 
     public showWrong() {
@@ -79,6 +87,8 @@ export default class Result extends cc.Component {
         dialog.active = true;
         dialog.scale = 0;
         cc.tween(dialog).to(0.5, { scale: 1 }, { easing: 'elasticOut' }).start();
+
+        this.main.stopTime();
     }
 
     private hideAll() {
@@ -94,10 +104,8 @@ export default class Result extends cc.Component {
     private clickStartGameBtn() {
         this.node.active = false;
 
-        // Model.instance.levelUp();
-        // this.main.showLianxi();
-
-        this.showLevelUp_1();
+        // this.showLevelUp_1();
+        this.clickStartXunLianBtn();
     }
 
     // 点击错误弹窗再试一次按钮

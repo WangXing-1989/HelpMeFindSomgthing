@@ -29,17 +29,22 @@ export default class Drawer extends cc.Component {
         if (!this.main.checkIsClick()) {
             return;
         }
+
+        console.log(`点击了：${this.node.name} : ${this.articleIndex}`);
+
+        this.main.checkGame();
         
         this.open();
         
-        if (this.articleIndex) {
+        if (this.articleIndex != null) {
             this.showArticle();
             this.right();
         } else {
             this.wrong();
         }
 
-        this.main.checkGame();
+
+        console.log(`当前answer : ${Model.instance.answers}`);
     }
 
     open() {

@@ -80,7 +80,7 @@ export default class Main extends cc.Component {
 
     private curTime: number; // 当前剩余时间
     private articleIdArr: number[]; // 物品池
-    private curClickNum: number; // 当前游戏点击次数
+    public curClickNum: number; // 当前游戏点击次数
     private isClick: boolean; // 是否能点击抽屉（放东西的时候不能点）
 
     start() {
@@ -101,6 +101,7 @@ export default class Main extends cc.Component {
 
     public startGame() {
         Model.instance.init();
+        this.result.node.active = false;
         this.cover.active = false;
         this.content.active = true;
         this.showLianxi();
@@ -170,9 +171,19 @@ export default class Main extends cc.Component {
             Model.instance.start();
             this.curClickNum = 0;
 
-            this.scheduleOnce(() => this.isClick = true, 5);
+            this.scheduleOnce(() => this.isClick = true, 3); // 3秒后开始点击
 
             this.playAudio(this.tips5Audio);
+
+
+            //test code
+            let logStr = "格子物品数据： ";
+            for (let i = 0; i < this.cabinet.childrenCount; i++) {
+                let drawer = this.cabinet.children[i].getComponent(Drawer);
+                drawer.node.name = `drawer_${i}`;
+                logStr += drawer.node.name + " : " + drawer.articleIndex + ";\n";
+            }
+            console.log(logStr);
         }
     }
 
@@ -248,7 +259,7 @@ export default class Main extends cc.Component {
      * @returns Drawer
      */
     getRandomDrawer(): Drawer {
-        let arr = this.cabinet.children.filter(item => !item.getComponent(Drawer).articleIndex);
+        let arr = this.cabinet.children.filter(item => item.getComponent(Drawer).articleIndex == null);
         if (arr && arr.length > 0) {
             let index = Math.round(Math.random() * (arr.length - 1));
             return arr[index].getComponent(Drawer);
@@ -275,24 +286,36 @@ export default class Main extends cc.Component {
         }
     }
 
-    private stopTime() {
+    public stopTime() {
         this.unschedule(this.updateTime);
         this.timeLabel.node.parent.active = false;
     }
 
     checkGame() {
         this.curClickNum++; // 每点击一次点击次数+1
+
+        this.isClick = false;
+        this.scheduleOnce(() => this.isClick = true, 1);
+
+        let qIndex = `${Model.instance.LevelDifficultyEnd}/${Model.instance.levelCount}`;
+        let gameNum = `${Model.instance.curGameNum + 1}/${Model.instance.levelData.total}`;
+        let clickNum = `${this.curClickNum}/${Model.instance.levelData.count}`;
+        let str = `第${qIndex}题，第${gameNum}次游戏，第${clickNum}次点击`;
+        console.log(str);
     }
 
     checkResult() {
         if (this.curClickNum >= Model.instance.levelData.count) {
             Model.instance.curGameNum++; // 每点击 Model.instance.levelData.count 次，游戏次数+1
+            this.initCabinet();
 
             if (Model.instance.curGameNum >= Model.instance.levelData.total) {
                 if (Model.instance.answers[Model.instance.LevelDifficultyEnd]) {
                     if (Model.instance.getCurLevelIsRight()) {
-                        if (Model.instance.LevelDifficultyEnd == 0) {
+                        if (Model.instance.LevelDifficultyEnd == 0) { // 练习模式
                             this.result.showRight();
+                        } else if (Model.instance.LevelDifficultyEnd == 3) { // 通关
+                            this.result.showAllRight();
                         } else {
                             this.result.showLevelUp_2();
                         }
