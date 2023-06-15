@@ -316,6 +316,7 @@ export default class Main extends cc.Component {
                             this.result.showRight();
                         } else if (Model.instance.LevelDifficultyEnd == 3) { // 通关
                             this.result.showAllRight();
+                            Model.instance.allRight();
                         } else {
                             this.result.showLevelUp_2();
                         }

@@ -91,7 +91,7 @@ export default class Model {
             this.curGameNum = 0;
             return true;
         } else {
-            this.allRight();
+            // this.allRight();
             return false;
         }
     }

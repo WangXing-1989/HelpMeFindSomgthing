@@ -96,7 +96,7 @@ export default class GHttp {
                 gameId: this.gameId,
                 // 需要传的参数
                 gameName: this.gameName,
-                totalScore: Model.instance.totalScore, //游戏得分
+                // totalScore: Model.instance.totalScore, //游戏得分
                 firstTaskSuccessCount: Model.instance.firstTaskSuccessCount, //正确次数
                 firstTaskReaction: Model.instance.firstTaskReaction, //平均反应时
                 secondTaskSuccessCount: Model.instance.secondTaskSuccessCount, //正确次数
