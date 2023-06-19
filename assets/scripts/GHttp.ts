@@ -4,7 +4,7 @@ import Model from "./Model";
 export default class GHttp {
     private static _instance: GHttp = null;
     /**游戏名字 */
-    private gameName: string = "旋转汉字"
+    private gameName: string = "帮我找东西"
     /**服务器地址 */
     private serverUrl: string = "https://www.jiaozi.ink/v1/";
 
@@ -358,7 +358,8 @@ export default class GHttp {
         this.sendGet("admin/game-name-all",
             {
                 //   id:this.userId
-                pages: 2
+                pages: 1,
+                limit: 100
             },
             (res) => {
                 if (res.resid == 200) {
