@@ -99,6 +99,7 @@ export default class Main extends cc.Component {
         this.isClick = false;
     }
 
+    /** 开始游戏 */
     public startGame() {
         Model.instance.init();
         this.result.node.active = false;
@@ -107,6 +108,7 @@ export default class Main extends cc.Component {
         this.showLianxi();
     }
 
+    /** 显示联系模式界面 */
     public showLianxi() {
         Model.instance.resetGameNum();
         this.initCabinet();
@@ -114,6 +116,7 @@ export default class Main extends cc.Component {
         this.resetCurTime();
     }
 
+    /** 重置倒计时 */
     public resetCurTime() {
         this.curTime = Model.instance.totalTime;
         this.stopTime();
@@ -128,6 +131,7 @@ export default class Main extends cc.Component {
         }
     }
 
+    /** 显示顶部提示语 */
     private showTips(type: number, articleIndex: number = -1, cur: number = -1) {
         this.tipsPanel.active = true;
         let tips1 = this.tipsPanel.getChildByName("tips1");
@@ -201,6 +205,7 @@ export default class Main extends cc.Component {
         }
     }
 
+    /** 点击屏幕 */
     clickStage() {
         let tips1 = this.tipsPanel.getChildByName("tips1");
         let tips2 = this.tipsPanel.getChildByName("tips2");
@@ -215,6 +220,7 @@ export default class Main extends cc.Component {
         }
     }
 
+    /** 随机在抽屉里放物品的流程（关键） */
     lookArticles(cur: number, count: number) {
         let randomIndex = this.getRandomArticle();
         this.article.node.active = true;
@@ -267,6 +273,7 @@ export default class Main extends cc.Component {
         return null;
     }
 
+    /** 开始倒计时 */
     private startTime() {
         this.tipsPanel.active = false;
 
@@ -276,6 +283,7 @@ export default class Main extends cc.Component {
         Model.instance.start();
     }
 
+    /** 刷新倒计时 */
     private updateTime() {
         if (this.curTime > 0) {
             this.curTime--;
@@ -286,11 +294,13 @@ export default class Main extends cc.Component {
         }
     }
 
+    /** 停止倒计时 */
     public stopTime() {
         this.unschedule(this.updateTime);
         this.timeLabel.node.parent.active = false;
     }
 
+    /** 检查游戏次数 */
     checkGame() {
         this.curClickNum++; // 每点击一次点击次数+1
 
@@ -304,6 +314,7 @@ export default class Main extends cc.Component {
         console.log(str);
     }
 
+    /** 检查结果（关键） */
     checkResult() {
         if (this.curClickNum >= Model.instance.levelData.count) {
             Model.instance.curGameNum++; // 每点击 Model.instance.levelData.count 次，游戏次数+1
@@ -334,6 +345,7 @@ export default class Main extends cc.Component {
         }
     }
 
+    /** 是否能点击（做延迟点击用的，留给提示语播放的时间） */
     checkIsClick(): boolean {
         return this.isClick && (this.curClickNum < Model.instance.levelData.count);
     }

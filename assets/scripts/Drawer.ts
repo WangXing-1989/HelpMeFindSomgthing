@@ -3,6 +3,9 @@ import Model from "./Model";
 
 const {ccclass, property} = cc._decorator;
 
+/**
+ * 抽屉类
+ */
 @ccclass
 export default class Drawer extends cc.Component {
 
@@ -25,6 +28,10 @@ export default class Drawer extends cc.Component {
         this.wrongNode.active = false;
     }
 
+    /**
+     * 点击抽屉
+     * @returns 
+     */
     clickSelf() {
         if (!this.main.checkIsClick()) {
             return;
@@ -47,14 +54,17 @@ export default class Drawer extends cc.Component {
         console.log(`当前answer : ${Model.instance.answers}`);
     }
 
+    /** 打开抽屉 */
     open() {
         this.icon.active = true;
     }
 
+    /** 关闭抽屉 */
     close() {
         this.icon.active = false;
     }
-
+    
+    /** 显示抽屉里的物品（如果有的话） */
     showArticle() {
         this.main.article.node.active = true;
         this.main.article.spriteFrame = this.main.articleSpriteFrames[this.articleIndex];
@@ -64,10 +74,12 @@ export default class Drawer extends cc.Component {
         this.main.article.node.opacity = 255;
     }
 
+    /** 隐藏抽屉里的物品 */
     hideArticle() {
         this.main.article.node.active = false;
     }
 
+    /** 正确（抽屉里有东西） */
     right() {
         this.rightNode.active = true;
         this.rightNode.x = 0;
@@ -88,6 +100,7 @@ export default class Drawer extends cc.Component {
         this.articleIndex = null;
     }
 
+    /** 错误（抽屉里没有东西） */
     wrong() {
         this.wrongNode.active = true;
         this.wrongNode.x = 0;
