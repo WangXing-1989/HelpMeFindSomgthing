@@ -8,7 +8,7 @@
   "genMipmaps": false,
   "packable": true,
   "width": 127,
-  "height": 40,
+  "height": 38,
   "platformSettings": {},
   "subMetas": {
     "nailClippers": {
@@ -23,9 +23,9 @@
       "trimX": 0,
       "trimY": 0,
       "width": 127,
-      "height": 40,
+      "height": 38,
       "rawWidth": 127,
-      "rawHeight": 40,
+      "rawHeight": 38,
       "borderTop": 0,
       "borderBottom": 0,
       "borderLeft": 0,
